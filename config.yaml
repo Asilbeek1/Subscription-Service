@@ -1,0 +1,13 @@
+env: local #local dev prod
+postgres:
+  host: localhost
+  port: 5432
+  db_name: postgres
+  sslmode: disable
+  max_open_conns: 25
+  conn_max_lifetime: 5m
+http_server:
+  port: 8080
+  timeout: 4s
+  idle_timeout: 60s
+
