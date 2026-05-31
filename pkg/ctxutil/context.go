@@ -1,6 +1,10 @@
 package ctxutil
 
-import "context"
+import (
+	"context"
+
+	"github.com/go-chi/chi/v5/middleware"
+)
 
 type key string
 
@@ -11,9 +15,5 @@ func WithRequestId(ctx context.Context, id string) context.Context {
 }
 
 func GetRequestID(ctx context.Context) string {
-	id, ok := ctx.Value(requestIDKey).(string)
-	if !ok {
-		return "unknown"
-	}
-	return id
+	return middleware.GetReqID(ctx)
 }

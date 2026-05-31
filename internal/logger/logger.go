@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"log"
 	"log/slog"
 	"os"
 )
@@ -27,7 +28,8 @@ func SetUpLogger(env string) *slog.Logger {
 		logger = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
+	default:
+		log.Fatalf("environment is set wrong, only set to: %s, %s, %s", LocalEnv, DevEnv, ProdEnv)
 	}
-
 	return logger
 }

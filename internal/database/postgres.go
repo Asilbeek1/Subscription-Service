@@ -14,6 +14,13 @@ type DB struct {
 	log  *slog.Logger
 }
 
+func NewDB(pool *pgxpool.Pool, log *slog.Logger) *DB {
+	return &DB{
+		pool: pool,
+		log:  log,
+	}
+}
+
 func OpenDB(ctx context.Context, cfg config.Postgres, log *slog.Logger) (*DB, error) {
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s?sslmode=%s",

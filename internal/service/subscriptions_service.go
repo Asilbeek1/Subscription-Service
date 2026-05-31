@@ -22,10 +22,21 @@ func NewSubscriptionService(repo domain.Repository, log *slog.Logger) *Subscript
 	}
 }
 
-func (s *SubscriptionService) CreateSubscription(ctx context.Context, input domain.CreateSubscription) (*domain.Subscription, error) {
+func (s *SubscriptionService) CreateSubscription(ctx context.Context, sub domain.CreateSubscription) (*domain.Subscription, error) {
 	requestID := ctxutil.GetRequestID(ctx)
 
-	result, err := s.repo.Create(ctx, input)
+	if sub.Price <= 0 {
+		s.log.Warn("invalid price price must be bigger than 0",
+			"request_id", requestID)
+		return nil, domain.ErrWrongPrice
+	}
+	if sub.EndDate != nil && sub.EndDate.Before(sub.StartDate) {
+		s.log.Warn("invalid date range: end before start", "request_id", requestID,
+			"start_date", sub.StartDate, "end_date", sub.EndDate)
+		return nil, domain.ErrWrongDate
+	}
+
+	result, err := s.repo.Create(ctx, sub)
 	if err != nil {
 		s.log.Error("Error Creating Subscription",
 			"request_id", requestID,
@@ -44,11 +55,11 @@ func (s *SubscriptionService) GetById(ctx context.Context, id int) (*domain.Subs
 			s.log.Error("error record not found",
 				"requestID", requestID,
 				"error", err)
-			s.log.Error("get subscription failed",
-				"request_ID", requestID,
-				"error", err)
 			return nil, err
 		}
+		s.log.Error("get subscription failed",
+			"request_ID", requestID,
+			"error", err)
 		return nil, err
 	}
 
@@ -94,44 +105,48 @@ func (s *SubscriptionService) Delete(ctx context.Context, id int) error {
 }
 
 func (s *SubscriptionService) CalculateTotal(ctx context.Context, filter domain.FilteredSum) (int64, error) {
-	var list []domain.Subscription
 	requestID := ctxutil.GetRequestID(ctx)
+
+	from := time.Time{}
+	to := time.Now()
+	if filter.From != nil {
+		from = *filter.From
+	}
+	if filter.To != nil {
+		to = *filter.To
+	}
+
 	list, err := s.repo.ListByFilter(ctx, filter)
 	if err != nil {
-		s.log.Error("Error Filtering From DB",
-			"request_id", requestID,
-			"error", err)
+		s.log.Error("Error to filter from db", "request_id", requestID, "error", err)
 		return 0, err
 	}
 
-	total := 0
+	var total int64
 	for _, sub := range list {
-		end := sub.EndDate
-		if end == nil {
+		start := maxTime(sub.StartDate, from)
+
+		var end time.Time
+		if sub.EndDate == nil {
+			end = to
+		} else {
+			end = minTime(*sub.EndDate, to)
+		}
+
+		if start.After(end) {
 			continue
 		}
 
-		months, err := calcMonth(sub.StartDate, *end, *filter.From, *filter.To, s.log)
-		if err != nil {
-			return 0, err
-		}
-		total += int(sub.Price) * months
+		total += int64(sub.Price) * int64(calcMonth(start, end))
 	}
-	return int64(total), nil
-}
-func calcMonth(start_date, end_date, from, to time.Time, log *slog.Logger) (int, error) {
-	start := maxTime(start_date, from)
-	end := minTime(end_date, to)
 
-	if start.After(end) {
-		log.Error("Error start date is bigger than end date")
-		return 0, domain.ErrWrongDate
-	}
-	startIdx := from.Year()*12 + int(from.Month())
-	endIdx := to.Year()*12 + int(to.Month())
-	return endIdx - startIdx, nil
+	return total, nil
 }
-
+func calcMonth(start, end time.Time) int {
+	startIdx := start.Year()*12 + int(start.Month())
+	endIdx := end.Year()*12 + int(end.Month())
+	return endIdx - startIdx + 1
+}
 func maxTime(a, b time.Time) time.Time {
 	if a.After(b) {
 		return a
