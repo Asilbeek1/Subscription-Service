@@ -9,8 +9,10 @@ import (
 )
 
 var (
-	ErrWrongDate = errors.New("Error wrong date")
-	ErrNotFound  = errors.New("Not Found")
+	ErrWrongDate   = errors.New("Error wrong date")
+	ErrNotFound    = errors.New("Not Found")
+	ErrWrongPrice  = errors.New("price must be > 0")
+	ErrInvalidUUID = errors.New("invalid uuid")
 )
 
 type Repository interface {

@@ -152,7 +152,7 @@ func (db *DB) List(ctx context.Context) ([]domain.Subscription, error) {
 	return result, nil
 }
 
-func (db *DB) FilterSum(ctx context.Context, filter domain.FilteredSum) ([]domain.Subscription, error) {
+func (db *DB) ListByFilter(ctx context.Context, filter domain.FilteredSum) ([]domain.Subscription, error) {
 	query, args := buildQueryFilter(filter)
 
 	rows, err := db.pool.Query(ctx, query, args...)

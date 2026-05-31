@@ -1,8 +1,7 @@
-env: local #local dev prod
+env: development #local development production
 postgres:
   host: localhost
   port: 5432
-  db_name: postgres
   sslmode: disable
   max_open_conns: 25
   conn_max_lifetime: 5m
