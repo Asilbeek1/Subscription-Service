@@ -1,6 +1,6 @@
 env: development #local development production
 postgres:
-  host: localhost
+  host: postgres
   port: 5432
   sslmode: disable
   max_open_conns: 25
@@ -9,4 +9,3 @@ http_server:
   port: 8080
   timeout: 4s
   idle_timeout: 60s
-

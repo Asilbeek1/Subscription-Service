@@ -18,7 +18,7 @@ type Postgres struct {
 	DB_USER      string        `env:"DB_USER" env-required:"true"`
 	DB_PASSWORD  string        `env:"DB_PASSWORD" env-required:"true"`
 	DBName       string        `env:"DB_NAME" env-required:"true"`
-	Host         string        `yaml:"host" env-default:"localhost"`
+	Host         string        `yaml:"host" env-default:"postgres"`
 	Port         int           `yaml:"port" env-default:"5432"`
 	SSLMode      string        `yaml:"sslmode" env-default:"disable"`
 	MaxOpenConns int           `yaml:"max_open_conns" env-default:"25"`

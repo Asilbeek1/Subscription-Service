@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 
@@ -11,8 +10,6 @@ import (
 	"github.com/Asilbeek1/Subscription-Service/internal/logger"
 	"github.com/Asilbeek1/Subscription-Service/internal/service"
 	"github.com/Asilbeek1/Subscription-Service/internal/transport/http/server"
-
-	"github.com/joho/godotenv"
 )
 
 // @title           Subscription Service API
@@ -21,9 +18,6 @@ import (
 // @host            localhost:8080
 // @BasePath        /
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(".env file not found. Copy .env.example to .env")
-	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -38,7 +32,7 @@ func main() {
 	//Init database layer
 	pool, err := database.OpenDB(ctx, cfg.Postgres, log)
 	if err != nil {
-		log.Error("Database connection error")
+		log.Error("Database connection error", "error", err)
 		os.Exit(1)
 	}
 	log.Info("Database connection established", "port", cfg.Postgres.Port)
